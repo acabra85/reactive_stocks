@@ -7,6 +7,7 @@ import play.api.libs.json.JsObject
 import play.api.libs.json.JsString
 import play.api.libs.json.JsNumber
 import actors.StockManagerActor.StockHistory
+import actors.ActorManagerExtension
 
 import scala.collection.JavaConverters._
 
@@ -16,7 +17,8 @@ import scala.collection.JavaConverters._
   * */
 class UserActor(out: ActorRef) extends Actor with ActorLogging {
 
-    val stockManagerActor = StockManagerActor.stockManagerActor
+    //val stockManagerActor = ActorManagerExtension(context.system).stockManagerActor
+    val stockManagerActor = ActorManagerExtension(context.system).stockManagerProxy
 
     // watch the default stocks
     val defaultStocks = Play.application.configuration.getStringList("default.stocks")

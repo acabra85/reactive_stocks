@@ -22,7 +22,7 @@ class StockManagerActor extends Actor {
 
 object StockManagerActor {
 
-    lazy val stockManagerActor: ActorRef = Akka.system.actorOf(Props(classOf[StockManagerActor]))
+    //lazy val stockManagerActor: ActorRef = Akka.system.actorOf(Props(classOf[StockManagerActor]))
 
     def props(): Props =
         Props(new StockManagerActor())
