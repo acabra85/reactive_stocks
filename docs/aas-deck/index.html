@@ -1,0 +1,1783 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+
+<title>Advanced Akka</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<link rel="stylesheet" href="css/reveal.min.css">
+<link rel="stylesheet" href="css/theme/typesafe-training.css" id="theme">
+<link rel="stylesheet" href="lib/css/idea.css">
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+  if( window.location.search.match( /print-pdf/gi ) ) {
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = 'css/print/pdf.css';
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  }
+</script>
+
+<!--[if lt IE 9]>
+<script src="lib/js/html5shiv.js"></script>
+<![endif]-->
+</head>
+
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ########################################################################################### -->
+<!-- BEGIN
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-background="#53cdec" data-state="h2Uppercase"><script type="text/template">
+## Advanced Akka
+
+#### Seven4N, Oct 27, 2014
+
+#### Ryan Knight & Duncan DeVore
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Agenda
+
+- [Review of Akka Basics](#/review-basics) <!-- .element: class="agendaItem" -->
+- [Akka Extensions](#/akka-extensions) <!-- .element: class="agendaItem" -->
+- [Akka Remoting](#/akka-remoting) <!-- .element: class="agendaItem" -->
+- [Akka Cluster](#/akka-cluster) <!-- .element: class="agendaItem" -->
+- [Cluster Aware Routers](#/cluster-aware-routers) <!-- .element: class="agendaItem" -->
+- [Cluster Singleton](#/cluster-singleton) <!-- .element: class="agendaItem" -->
+- [Cluster Sharding](#/cluster-sharding) <!-- .element: class="agendaItem" -->
+- [Akka Persistence](#/akka-persistence) <!-- .element: class="agendaItem" -->
+- [Akka Data Replication](#/akka-data-replication) <!-- .element: class="agendaItem" -->
+- [Wrapping up](#/wrapping-up) <!-- .element: class="agendaItem" -->
+</script></section>
+
+
+<!-- ########################################################################################### -->
+<!-- Review of Akka Basics
+<!-- ########################################################################################### -->
+
+
+<section>
+
+
+<section id="review-basics" data-markdown data-background="#53cdec" data-state="h2Uppercase"><script type="text/template">
+## Review of Akka Basics
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## What is Akka?
+
+<blockquote>Akka is a toolkit and runtime for building highly concurrent, distributed, and fault tolerant event-driven applications on the JVM.</blockquote>
+<small>[akka.io](http://akka.io)</small>
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Akka is Reactive
+
+![Reactive](images/reactive.png "Reactive")
+
+- React to events
+- React to load
+- React to failure
+
+<small class="footnote">For more information see the [Reactive Manifesto](http://www.reactivemanifesto.org/)</small>
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-state="imgNoBorder"><script type="text/template">
+## Akka&#39;s Value Proposition
+
+A single **unified** programming model for
+
+- simpler concurrency
+- simpler distribution
+- simpler fault tolerance
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Simpler Concurrency
+
+![Concurrency](images/concurrency.jpg "Concurrency")
+
+- Actors let us write code in a **single-threaded illusion**
+- No locks, *synchronized* or other primitives needed
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Simpler Distribution
+
+![Distribution](images/distribution.jpg "Distribution")
+
+- Everything in Akka is **distributed by default**
+- Akka goes from remote to local by optimization
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Simpler Fault Tolerance
+
+![Resilience](images/resilience.jpg "Resilience")
+
+Akka **decouples** communication from failure handling:
+
+- Supervisors handle failure
+- Callers need not care (they can&#39;t anyway)
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-background="#627886" data-state="h2Uppercase"><script type="text/template">
+## Group Exercise I
+### Review actor basics
+
+- Describe the actor model
+- Explain in detail how Akka implements the actor model
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-background="#627886" data-state="h2Uppercase"><script type="text/template">
+## Group Exercise II
+### Review testing actors
+
+- Why is testing actors hard?
+- How does Akka help with testing?
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-background="#627886" data-state="h2Uppercase"><script type="text/template">
+## Group Exercise III
+### Review actor lifecycle
+
+- Describe the actor lifecycle (without failure)
+- Explain how you can monitor the actor lifecycle
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-background="#627886" data-state="h2Uppercase"><script type="text/template">
+## Group Exercise IV
+### Review fault tolerance
+
+- What does fault tolerance mean?
+- How is fault tolerance implemented in Akka?
+- Describe the full actor lifecycle including failure
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-background="#627886" data-state="h2Uppercase"><script type="text/template">
+## Group Exercise V
+### Review routers and dispatchers
+
+- What&#39;s a router and what&#39;s its purpose?
+- How do you create and configure routers?
+- Explain dispatchers
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-background="#627886" data-state="h2Uppercase"><script type="text/template">
+## Group Exercise VI
+### Review miscellaneous basics
+
+- How can an actor&#39;s behavior be changed?
+- Explain the ask-pattern and discuss dos and don&#39;ts
+- What&#39;s an Akka extension?
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Case Study: Akka Stocks
+
+- Check out the base code from:[reactive-stocks2](https://github.com/retroryan/reactive-stocks2.git)
+
+- The first thing you will see are three stock charts which are being pushed values in real-time from the server.  These values are simulated so the application always has interesting data flowing in real-time.  Clicking on a stock chart will fetch recent news mentioning the stock symbol, use a service to do sentiment analysis on each news, and then display a buy, sell, or hold recommendation based on the aggregate sentiments.  New stocks can be added to the list using the form in the header.
+
+- Mission: Starting from the provided simple implementation, make Akka Stocks distributed and highly available!
+</script></section>
+
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-background="#627886" data-state="h2Uppercase"><script type="text/template">
+## Group Exercise
+### Analyze the provided Akka Stocks code
+
+- Form groups of three to five students
+- Analyze the provided code in detail and prepare a short presentation:
+  - Focus on the three main components UserActor, StockManagerActor and StockActor
+  - Describe the message flows
+  - Identify risks for high availability and potential solutions
+  - Collect questions
+</script></section>
+
+</section>
+
+<!-- ########################################################################################### -->
+<!-- Akka Extensions
+<!-- ########################################################################################### -->
+
+
+<section>
+
+
+<section id="akka-extensions" data-background="#53cdec" data-markdown><script type="text/template">
+## Akka Extensions
+</script></section>
+
+
+<!-- ############################################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Akka Extensions
+
+- Extensions hook into Akka and offer a more powerful API:
+  - Access to the  root and user guardians
+  - Access to the *ActorRefProvider*
+- Extensions are loaded once per actor system
+- Simple yet idiomatic use case: configuration settings
+- **Attention**: An extension implementation must ensure thread safety!
+</script></section>
+
+
+<!-- ############################################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Creating an Extension
+
+``` scala
+object MyExtension extends ExtensionKey[MyExtension]
+
+class MyExtension(system: ExtendedActorSystem) extends Extension {
+  val veryExtensive = "veryExtensive"
+}
+
+trait MyExtensionActor {
+  this: Actor =>
+
+  val myExtension: MyExtension = MyExtension(context.system)
+}
+```
+
+- Singleton object mixing in the *ExtensionKey* trait
+- Implementation class mixing in the *Extension* marker trait
+- Optional trait providing convenient access inside of actor code
+</script></section>
+
+
+<!-- ############################################################################################################### -->
+
+
+<section data-markdown data-background="#627886" data-state="h2Uppercase"><script type="text/template">
+## Exercise
+### Use an Akka extension as a global Actor registry.
+
+- Create an Akka Extension ‘ActorManagerExtension’  that acts as a global registry for common actors.
+- Add StockManagerActor to the Extension
+- Change the references to actors – like StockManagerActor.stocksActor() to use the extension instead.
+</script></section>
+
+
+</section>
+
+<!-- ########################################################################################### -->
+<!-- Ask Pattern
+<!-- ########################################################################################### -->
+
+
+<section>
+
+
+<section id="ask-pattern" data-background="#53cdec" data-markdown><script type="text/template">
+## Ask Pattern
+</script></section>
+
+
+<!-- ############################################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Response Timeout
+
+``` scala
+pong ! Ping // Send Ping request
+
+override def receive: Receive = {
+  case Pong => // Todo Handle Pong response
+}
+```
+
+- As you have seen, request-response is a frequently used pattern in Akka
+- Quiz: How can you impose a response timeout?
+
+</script></section>
+
+
+<!-- ############################################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## One-off Actor with scheduled Timeout
+
+``` scala
+actor(new Act {
+  pong ! Ping
+  ...scheduler.scheduleOnce(3 seconds, self, Timeout)
+  become {
+    case pong @ Pong =>
+      context.parent forward pong
+      context.stop(self)
+    case Timeout =>
+      context.parent ! Failure(TimeoutException)
+      context.stop(self)
+  }
+})
+```
+
+- Create a one-off child actor and schedule a timeout message to itself
+- Either forward the response or send *Failure* holding a timeout exception
+- **Attention**: Don&#39;t forget to stop the one-off child actor!
+</script></section>
+
+
+<!-- ############################################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Interacting with Actors from the Outside
+
+``` scala
+// This is not inside of an actor
+
+val someActor = system.actorOf(...)
+
+someActor ! SomeRequest(...)
+
+// As this isn't an actor, responses go to dead letters!
+```
+
+- If you send a message to an actor from the outside,
+  - there&#39;s no implicit sender and
+  - responses go to dead letters
+- Quiz: How can you solve this issue?
+
+</script></section>
+
+<!-- ############################################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Simply use the Ask Pattern
+
+``` scala
+val response = pong ? Ping
+
+response.mapTo[Pong] onComplete {
+  case Success(...) => ...
+  case Failure(...) => ...
+}
+```
+
+- Instead of *tell* (*!*) use *ask* (*?*)
+- *ask* returns a *Future* which gets completed with
+  - the response or
+  - an *AskTimeoutException*
+- For this to work, you
+  - have to import *akka.pattern.ask* and
+  - need an implicit *Timeout* and *ExecutionContext* in scope
+- Quiz: What&#39;s the reason for using *mapTo*?
+</script></section>
+
+
+<!-- ############################################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Combine Ask and PipeTo Patterns
+
+``` scala
+pong ? Ping pipeTo self
+```
+
+- If you want to send the result of a *Future* to an actor use *pipeTo*:
+  - Either the successful result of the *Future* or
+  - a *Status.Failure* holding the failure is sent to the given actor
+- For this to work, you additionally have to import *akka.pattern.pipe*
+</script></section>
+
+
+<!-- ############################################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Ask Pattern – Dos and Don&#39;ts
+
+- In non-actor code use *ask* to interact with actor code
+- In actor code only use *ask* in combination with *pipeTo*
+- **Attention**:
+  - In bothe cases you have to know a timeout
+  - Don&#39;t ever register callbacks accessing mutable actor state!
+</script></section>
+
+
+<!-- ############################################################################################################### -->
+
+
+<section data-markdown data-background="#627886" data-state="h2Uppercase"><script type="text/template">
+## Exercise
+### Use the ask pattern
+
+- Review the Settings extension that load extensions from the config and makes them available globally.  
+- Move StockSentiment Logic into an Actor.
+- Change how the sentiment.url and tweet.url use the Settings to use the actors local actor system. 
+- Add StockSentiment Actor to the ‘ActorManagerExtension’ 
+- Use the Ask pattern to retrieve the sentiment analysis from the StockSentiment
+
+</script></section>
+
+
+</section>
+
+<!-- ########################################################################################### -->
+<!-- Modifying Actor Behavior
+<!-- ########################################################################################### -->
+
+
+<section>
+
+
+<section id="modifying-actor-behavior" data-background="#53cdec" data-markdown><script type="text/template">
+## Modifying Actor Behavior
+</script></section>
+
+
+<!-- ############################################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Hot swapping Actor Behavior
+
+``` scala
+override def receive: Receive =
+  ready
+
+def ready: Receive = {
+  case msg =>
+    // Send *Done* to *self* when done
+    context.become(busy)
+}
+
+def busy: Receive = {
+  case Done => context.become(ready)
+}
+```
+
+- *receive* defines the initial behavior
+- *become* lets you swap in a new one
+- Idiomatic use case: finite state machine
+- Quiz: Which behavior is used after a restart?
+</script></section>
+
+
+<!-- ############################################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Behavior Stack
+
+``` scala
+def ready: Receive = {
+  case msg =>
+    // Send *Done* to *self* when done
+    context.become(busy, discardOld = false)
+}
+
+def busy: Receive = {
+  case Done => context.unbecome()
+}
+```
+
+- The current behavior can be popped onto a behavior stack
+- *unbecome* swaps in the topmost behavior again
+- **Attention**: Make sure you don&#39;t create memory leaks!
+</script></section>
+
+
+<!-- ############################################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Stashing away Messages
+
+``` scala
+def ready: Receive = {
+  case msg =>
+    // Send *Done* to *self* when done
+    context.become(busy, discardOld = false)
+}
+
+def busy: Receive = {
+  case Done =>
+    unstashAll()
+    context.unbecome()
+  case _ =>
+    stash()
+}
+```
+
+- Messages not handled by the current behavior get lost
+- What if a later behaviour could potentially handle these?
+- Mix in *Stash* and use *stash* and *unstashAll* to retain unhandled messages
+- **Attention**: Akka will automatically use a dequeue based mailbox
+</script></section>
+
+
+<!-- ############################################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Bounded and unbounded Stash
+
+- *akka.actor.default-mailbox.stash-capacity* defines the capacity of the stash
+- Its default is *-1*, i.e. the stash is unbounded
+- Mix in *UnboundedStash* to enforce an unbounded stash
+</script></section>
+
+
+<!-- ############################################################################################################### -->
+
+</section>
+
+<!-- ########################################################################################### -->
+<!-- Akka Remoting
+<!-- ########################################################################################### -->
+
+
+<section>
+
+
+<section id="akka-remoting" data-markdown data-background="#53cdec" data-state="h2Uppercase"><script type="text/template">
+## Akka Remoting
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Distributed by Default
+
+![Distribution](images/distribution.jpg "Distribution")
+
+- All of Akka is designed to work in a distributed setting
+- **Unified programming model** for local and remote:
+    - Remoting is purely driven by configuration
+    - There&#39;s (almost) no API
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Akka Remoting
+
+- Peer-to-peer communication:
+  - Each system can connect to any other system
+  - Each system can initiate and accept connections
+  - Akke Remoting is the foundation of Akka Cluster
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Actor System Address
+
+``` scala
+Address("akka", "my-system")
+Address("akka.tcp", "my-system", "host.domain.com", 2552)
+```
+
+- Each actor system can be identified by an *Address* comprised of:
+  - transport protocol
+  - name
+  - host (optional)
+  - port (optional)
+- If host and port are given, it&#39;s is a remote address, else it&#39;s a local one
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Selecting Remote Actors
+
+``` scala
+val path = RootActorPath(address) / "user" / "game-engine"
+val gameEngine = context actorSelection path
+```
+
+- To select a remote actor, you need to know
+  - the address of the remote actor system and
+  - the actor&#39;s local path
+- *RootActorPath* represents the path to the root guardian for the given actor system
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Akka Remoting Configuration: ActorRefProvider
+
+``` no-highlight
+akka {
+  actor {
+    provider = akka.remote.RemoteActorRefProvider
+  }
+}
+```
+
+- In order to enable Akka Remoting use the *RemoteActorRefProvider*
+- Quiz: What&#39;s the default for *akka.actor.provider*?
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Akka Remoting Configuration: Netty Transport
+
+``` no-highlight
+akka {
+  remote {
+    enabled-transports = [akka.remote.netty.tcp]
+
+    netty.tcp {
+      hostname = ${HOSTNAME}
+      port     = 0
+    }
+  }
+}
+```
+
+- Remoting can be configured to use various transports
+- By default, Netty TCP is used:
+  - By default *InetAddress.getLocalHost.getHostAddress* is used for the hostname
+  - HOCON can substitute system properties and environment variables
+  - By default *2552* is used for the port, *0* means automatic port selection
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Running multiple Nodes on a single Machine
+
+``` no-highlight
+runMain ...GameEngineApp -Dakka.remote.netty.tcp.port=2551
+```
+
+addCommandAlias("rb", "runMain backend.MainClusterManager -Dakka.remote.netty.tcp.port=2555 -Dakka.cluster.roles.0=backend")
+
+addCommandAlias("sj", "runMain backend.journal.SharedJournalApp -Dakka.remote.netty.tcp.port=2560 -Dakka.cluster.roles.0=shared-journal")
+
+- **Attention**: When running multiple nodes on a single machine, you must use different ports!
+- The akka-stocks project already defines a couple of useful commands:
+  - *rb* runs MainClusterManager on port *2555* with cluster role *backend*
+  - *sj* runs SharedJournalApp on port *2560* with cluster role *shared-journal* (covered later)
+  - For details, take a look at *build.sbt*
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-background="#627886" data-state="h2Uppercase"><script type="text/template">
+## Exercise - Remoting
+
+- Motivation: Split off the stock manager actor as a separate application
+- Enable remoting in configuration
+- Verify you can start separate cluster node using ‘sbt rb’  and shutdown with a ’s’
+- Start the stockManager actor on the remote node by modifying the MainClusterManager to start stockManager on startup.
+- Add the host and port of the remote node to the settings file and load them in the Settings extension.
+- In the ‘ActorManagerExtension’ lookup the stockManager on the remote node using the settings from the settings extension.
+- Change the stockManager in UserActor to use the modified stockManager from the ‘ActorManagerExtension’
+- Make sure the application still runs and the stocks still display as before
+</script></section>
+
+</section>
+
+
+<!-- ########################################################################################### -->
+<!-- Akka Cluster
+<!-- ########################################################################################### -->
+
+
+<section>
+
+
+<section id="akka-cluster" data-markdown data-background="#53cdec" data-state="h2Uppercase"><script type="text/template">
+## Akka Cluster
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Akka Cluster Definition
+
+<blockquote>Akka Cluster provides a fault-tolerant decentralized peer-to-peer based cluster membership service with no single point of failure or single point of bottleneck. It does this using gossip protocols and an automatic failure detector.</blockquote>
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Cluster Membership
+
+- A cluster is made up from a set of actor systems forming member nodes:
+  - An actor system can only be a member of one cluster at a time
+  - All actor systems within a cluster must have the same name
+- Member nodes can join or leave a cluster any time:
+  - Joining can happen automatically using seed nodes, programatically or manually via command line or JMX
+  - Shutting down an actor system makes it leave a cluster, but a member node can also leave programatically,  manually or by becoming unavailable
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Cluster Member States
+
+![Cluster member states](images/member-states.png "Cluster member states")
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Seed Nodes and Automatic Downing
+
+- Seed nodes are initial contact points for joining nodes:
+  - An actor system tries to automatically join by contacting the seed nodes
+  - In order to form a cluster, the first seed node must be started
+  - Specify seed nodes via the *akka.cluster.seed-nodes* configuration setting
+- Unavailable member nodes can be downed automatically:
+  - Specify automatic downing via the *auto-down-unreachable-after* configuration setting
+  - **Attention**: Automatic downing can lead to forming two separate clusters
+</script></section>
+
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Cluster Roles
+
+``` no-highlight
+-Dakka.cluster.roles.0=player-registry
+```
+
+- Member nodes may perform different functions
+- Therefore a member node can have zero or more roles:
+  - Specify roles via the *akka.cluster.roles* configuration setting
+  - The *Member* class lets you access the *roles* or ask *hasRole*
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Cluster Events
+
+``` scala
+Cluster(system).subscribe(listener, classOf[MemberUp])
+```
+
+- You can subscribe an actor to cluster change notifications
+- The most interesting event types are:
+  - *ClusterDomainEvent*: base type
+  - *MemberUp*: member status changed to *Up*
+  - *UnreachableMember*: member considered unreachable by failure detector
+  - *MemberRemoved*: member completely removed from the cluster
+  - *CurrentMemberState*: current snapshot state of the cluster, sent to new subscribers, unless *InitialStateAsEvents* specified
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Akka Cluster Configuration
+
+``` no-highlight
+akka {
+  actor {
+    provider = akka.cluster.ClusterActorRefProvider
+  }
+
+  cluster {
+    auto-down-unreachable-after = 5 seconds
+    seed-nodes                  = [
+      "akka.tcp://akkollect-system@"${HOSTNAME}":2551",
+      "akka.tcp://akkollect-system@"${HOSTNAME}":2552"
+    ]
+  }
+}
+```
+
+- In order to enable Akka Cluster use the *ClusterActorRefProvider*
+- For the purpose of this training we want quick automatic downing
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-background="#627886" data-state="h2Uppercase"><script type="text/template">
+## Exercise - Cluster events
+
+- Add clustering to the config.  Also remove the settings for the stock manager address.
+- Start Play and the remote node and verify that clustering starts by watching the cluster events.
+- Add a new StockManagerProxy actor and add it to the ‘ActorManagerExtension’.  
+- Leave the StockManager in the extension - it will be used again in the next exercise.
+- In the StockManagerProxy listen for Cluster Start Events and watch for a node that starts with the role “backend”.
+- When a new “backend” node starts use the address from that node to lookup the the StockManager.
+- Change the UserActor to use the StockManagerProxy
+- Make sure the cluster works as exepected - stocks should still display in the client.
+
+</script></section>
+
+
+</section>
+
+
+<!-- ########################################################################################### -->
+<!-- Cluster Aware Routers
+<!-- ########################################################################################### -->
+
+
+<section>
+
+
+<section id="cluster-aware-routers" data-markdown data-background="#53cdec" data-state="h2Uppercase"><script type="text/template">
+## Cluster Aware Routers
+</script></section>
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Message Processing revisited
+
+![Actor](images/actor-03.png "Actor")
+
+- An actor processes (at most) one message at a time
+- If you want to scale up and out, you have to use multiple actors in parallel
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Digression: Concurrency and Parallelism I
+
+- Definition: Two or more tasks are concurrent, if the order in which they get executed in time is not predetermined
+  - In other words, concurrency introduces non-determinism
+  - Concurrent tasks may or may not get executed in parallel
+  - Hence concurrency is a more general concept than parallelism
+- Concurrent programming is primarily concerned with the complexity that arises due to non-deterministic control flow
+- Parallel programming aims at improving throughput and making control flow deterministic
+</script></section>
+
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Digression: Concurrency and Parallelism II
+
+![Concurrency vs. parallelism](images/con_and_par.jpg "Concurrency vs. parallelism")
+
+- Concurrency is a property of the program
+- Parallel execution is a property of the machine
+</script></section>
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Routers
+
+- A router routes messages to destination actors called routees
+- Depending on your needs, different routing strategies can be applied
+- Routers can be used standalone or as self contained router actors
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Routing Strategies provided by Akka
+
+- *RandomRoutingLogic*
+- *RoundRobinRoutingLogic*
+- *SmallestMailboxRoutingLogic*
+- *ConsistentHashingRoutingLogic*
+- *BroadcastRoutingLogic*
+- *ScatterGatherFirstCompletedRoutingLogic*
+- To write your own routing strategy, extend *RoutingLogic*:
+  - **Attention**: The implementation must be thread-safe!
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Router Actors
+
+- Akka provides two flavors of self contained router actors:
+  - Pool router: creates routees as child actors
+  - Group router: routees are provided via actor path
+- Message delivery is optimized:
+  - Messages don&#39;t get enqueed in the mailbox of the router actor
+  - Instead, messages are delivered to a routee directly
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Specially handled Messages
+
+- Most every message sent to a router is delivered to one of its routees
+- Yet the following messages are handled in a special way:
+  - *PoisonPill* is not delivered to any routee
+  - *Kill* is not delivered to any routee
+  - The payload of *Broadcast* is delivered to all routees
+- Quiz:
+  - What happens to the routees if you send the *PoisonPill* to a router?
+  - How can you stop all routees gracefully, i.e. handling already received messages before stopping?
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Creating a Router Actor
+
+``` scala
+context.actorOf(
+  Props(new SomeActor).withRouter(FromConfig()),
+  "some-actor"
+)
+
+context.actorOf(
+  RoundRobinPool(4).props(Props(new SomeActor)),
+  "some-actor"
+)
+```
+
+- Router actors must be created programmatically
+- Either use *withRouter* with a *RouterConfig*:
+  - *FromConfig* completely relies on external configuration
+  - Other *RouterConfig*s use a mix of programmatic and external configuration
+- Or use the *props* method of a *Pool* or *Group* configuration
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Important Router Configuration
+
+- Settings can be defined in configuration or programmatically:
+  - If both are given, configuration wins
+- A pool router creates *nrOfInstances* child actors as routees:
+  - An optional *resizer* can dynamically adjust the number of routees
+  - The default *supervisorStrategy* escalates all failure
+- A group router uses existing *routees*
+- Quiz: What happens when a routee of a pool or a group router fails?
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Cluster Aware Routers
+
+- All routers can be made aware of the cluster:
+  - Cluster aware group routers look up routees on member nodes
+  - Cluster aware pool routers create routees on member nodes
+- When a member node joins the cluster or becomes available again, routees are added
+- When a member node leaves the cluster or becomes unavailable, routees are removed
+- While local routers "only" increase throughput, cluster aware routers can additionally increase availability
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Configuration of Cluster Aware Group Routers
+
+``` no-highlight
+my-router {
+  nr-of-instances = 100 // Attention: Total max number!
+  routees.paths   = ["/user/path-1", "/user/path-2"]
+  router          = scatter-gather-group
+
+  cluster {
+    allow-local-routees          = off // Default is on
+    enabled                      = on
+    use-role                     = my-role
+  }
+}
+```
+
+- *allow-local-routees* determines whether routees are looked up locally
+- *use-role* restricts lookup of routees to member nodes with the given role
+- Quiz: How exactly does a scatter-gather-first-completed router work?
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Configuration of Cluster Aware Pool Routers
+
+``` no-highlight
+my-router {
+  nr-of-instances = 100 // Attention: Total max number!
+
+  cluster {
+    allow-local-routees          = off // Default is on
+    enabled                      = on
+    max-nr-of-instances-per-node = 10 // Default is 1
+    use-role                     = my-role
+  }
+}
+```
+
+- *max-nr-of-instances-per-node* limits the number of routees per member node
+- Quiz: How many routees are created per node in this case if there are 100 nodes?
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-background="#627886" data-state="h2Uppercase"><script type="text/template">
+## Exercise - Cluster aware routers
+
+- Add a cluster aware group router called 'sentimentRouter' to the Akka Cluster Config that uses the stockManager as the routee and uses the role of “backend”
+- In ‘ActorManagerExtension’ create an actor instance of the router called 'sentimentRouter':
+  val sentimentRouter = system.actorOf(FromConfig.props(SentimentActor.props),"sentimentRouter")
+
+- Change the StockSentiment to use the new 'sentimentRouter'
+
+</script></section>
+
+</section>
+
+
+<!-- ########################################################################################### -->
+<!-- Cluster Singleton
+<!-- ########################################################################################### -->
+
+
+<section>
+
+
+<section id="cluster-singleton" data-markdown data-background="#53cdec" data-state="h2Uppercase"><script type="text/template">
+## Cluster Singleton
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Cluster Singleton
+
+- **Attention**: Experimental feature!
+- Sometimes you need exactly one instance of a certain type of actor somewhere in the cluster
+- Like for the classic singleton pattern, there are drawbacks, e.g. limited throughput
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Cluster Singleton Manager
+
+``` scala
+system.actorOf(
+  ClusterSingletonManager.props(
+    MyActor.props,
+    "my-actor",
+    PoisonPill,
+    Some("my-role")
+  ),
+  "singleton"
+)
+```
+
+- The singleton actor is managed by the *ClusterSingletonManager* actor
+- The manager needs to be started on all or role-specific member nodes
+- It always (re-)creates the singleton actor on the oldest member node
+- **Attention**: There&#39;s no hand-off for recreating the singleton actor on another member node; if you need to maintain state, use Akka Persistence!
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Cluster Singleton Proxy
+
+``` scala
+system.actorOf(
+  ClusterSingletonProxy.props(
+    "/user/singleton/my-actor",
+    Some("my-role")
+  ),
+  "my-actor-proxy"
+)
+```
+
+- How to access the singleton actor?
+- Use the *ClusterSingletonProxy*:
+  - It routes messages to the current singleton actor
+  - If currently no singleton actor is available, messages are buffered
+  - Quiz: How can it happen that no singleton actor is available?
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-background="#627886" data-state="h2Uppercase"><script type="text/template">
+## Exercise- Cluster singleton
+
+- Change StockSentimentActor to be run as a cluster singleton
+- Change the Play Server to use a Cluster Singleton Proxy to call into the StockSentimentActor
+- Add an additional cluster node by modifying the build.sbt and add an additional command alias
+- Run an additional cluster node and test where the singleton gets run. 
+- Test shutting down and starting new nodes – they need to be on new ports.
+
+</script></section>
+
+
+</section>
+
+<!-- ########################################################################################### -->
+<!-- Akka Persistence
+<!-- ########################################################################################### -->
+
+
+<section>
+
+
+<section id="akka-persistence" data-markdown data-background="#53cdec" data-state="h2Uppercase"><script type="text/template">
+## Akka Persistence
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Akka Persistence
+
+- **Attention**: Experimental feature!
+- Hard problems:
+  - How do you restore state when restarting an actor?
+  - How do you hand-over state to another instance of a cluster singleton?
+- Akka Persistence provides a generic solution for these
+- And Akka Persistence offers even more ...
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Event Sourcing
+
+- Essentially Akka Persistence applies **event sourcing** to actors:
+  - Instead of the current state all state changes - aka events - are persisted
+  - To restore the latest state, all events are reapplied
+- Akka Persistence
+  - introduces *PersistentActor*s,
+  - distinguishes between command and events handling
+  - allows for persisting events during command handling
+- When a persistent actor gets started or restarted, all events are replayed by default, such that its latest state gets restored
+- Events are stored in a pluggable journal
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## PersistentActor
+
+``` scala
+override def receiveRecover: Receive = {
+  case evt: SomeEvt => handleSomeEvt(evt)
+}
+
+override def receiveCommand: Receive = {
+  case SomeCmd(...) if !valid(...) =>
+    sender() ! IllegalCmd(...)
+  case SomeCmd(...)                =>
+    persist(SomeEvt(...)) { evt =>
+      // External side-effects go here!
+      handleSomeEvt(evt)
+    }
+}
+```
+
+- *receiveCommand* is for commands, *receiveRecover* is for replayed events
+- *persist* takes an event and a handler function which is invoked after the event has been persisted
+- Quiz: Can you give examples for external side-effects?
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## *persist* vs *persistAsync*
+
+``` scala
+persist(SomeEvt(...))(handleSomeEvt)
+
+// or
+
+persistAsync(SomeEvt(...))(handleSomeEvt)
+```
+
+- *persist* means that no new commands are processed before the event handler has been executed:
+  - This lowers throughput, but guarantees fully consistency state
+  - Internally this is implemented via stashing new commands
+- *persistAsync* allows for instantaneous processing of new commands:
+  - This enables high throughput
+  - **Attention**: Only use this if the event handler doesn&#39;t rely on state changes triggered by earlier commands
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Snapshots
+
+``` scala
+override def receiveRecover: Receive = {
+  case SomeEvt(...)             => // Reapply event
+  case SnapshotOffer(_, c: Int) => // Apply snapshot
+}
+```
+
+- Replaying a long history of events can be very ineffective
+- Therefore Akka Persistence lets you to create snapshots with *saveSnapshot*
+- During recovery the persistent actor receives a *SnapshotOffer*
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Recovery
+
+``` scala
+persistentActor ! Recover(toSequenceNr = 666)
+```
+
+- By default a persistent actor receives all events on start and restart
+- To disable automatic recovery, override *preStart* or *preRestart* respectively
+- Initiate recovery by sending *Recover*, optionally providing arguments:
+  - *fromSnapshot* specifies a snapshot selection criteria, by default the latest is used
+  - *toSequenceNr* defines an upper bound to restore an earlier state, by default *Long.MaxValue* is used
+- In a persistent actor you can access:
+  - *lastSequenceNr*
+  - *snapshotSequenceNr*
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-background="#627886" data-state="h2Uppercase"><script type="text/template">
+## Exercise
+### Persistent actors
+
+- Motivation: Make the player registry persistent
+- On receiving a *RegisterPlayer* command, if the name isn&#39;t taken, persist a *PlayerRegistered* event
+- Save a snapshot every 100 players
+- Make sure persistence works as expected: When moving the singleton actor to another member node, the players should be restored
+</script></section>
+
+
+</section>
+
+<!-- ########################################################################################### -->
+<!-- Cluster Sharding
+<!-- ########################################################################################### -->
+
+
+<section>
+
+
+<section id="cluster-sharding" data-markdown data-background="#53cdec" data-state="h2Uppercase"><script type="text/template">
+## Cluster Sharding
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Cluster Sharding
+
+- **Attention**: Experimental feature!
+- Essentially actor sharding is the same like database sharding:
+  - partitioning a large set of actors into many smaller sets,
+  - possibly in different physical locations
+- Cluster Sharding means
+  - using actors which can be identified by a logical identifier, so called entries
+  - distributing entries across several member nodes
+  - managing entries in groups, so called shards
+  - communicating with entries indirectly using their logical identifier
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## ShardRegion
+
+``` scala
+ClusterSharding(system).start(
+  "my-actor",
+  Some(Props(new MyActor)),
+  MyActor.idExtractor,
+  MyActor.shardResolver(shardCount)
+)
+```
+
+- *ShardRegion*s are actors that are started on all member nodes participating in Cluster Sharding
+- Shard regions route messages to entries and optionally create these if necessary
+- Shard regions need to be started with
+  - an entry type
+  - *Some* with *Props* for the entries or *None* for proxy mode and
+  - shard resolver and id extractor functions
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Sending messages via ShardRegions
+
+``` scala
+val myActorShardRegion =
+  ClusterSharding(system).shardRegion("my-actor")
+myActorShardRegion ! Envelope("id", "payload")
+```
+
+- To access a shard region use *ClusterSharding.shardRegion*
+- To send a message to a sharded actor, send an envelope containing
+  - the identifier and
+  - the payload
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Shard Resolver and Id Extractor
+
+``` scala
+val idExtractor: ShardRegion.IdExtractor = {
+  case Envelope(id, payload) => (id, payload)
+}
+
+def shardResolver(shardCount: Int): ShardRegion.ShardResolver = {
+  case Envelope(id, _) => id.hashCode % shardCount toString
+}
+```
+
+- The shard resolver is an *Any => String* function used to determine the shard identifier
+- Rule of thumb: Shard count should be ten times the maximum numbers of sharding member nodes
+- The id extractor is a PartialFunction[Any, (String, Any)] extracting the entry id and the message to be forwarded to the entry from a message sent to a shard region
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Important Information
+
+- Cluster Sharding makes use of Akka Persistence
+- **Attention**: For this training we use a shared journal, but don&#39;t use that in production
+- The shared journal can be started using the provided *SharedJournalApp*
+- On each node participating in Cluster Sharding the shared journal must be identified and set: This can be done with the provided *SharedJournalSetter* actor
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-background="#627886" data-state="h2Uppercase"><script type="text/template">
+## Exercise
+### Cluster sharding
+
+- Motivation: Split off the players using Cluster Sharding
+- Use the player name as identifier
+- Use the member nodes with "player-registry" role for the shards
+- In *GameEngineApp* and *PlayerRegistryApp* override *initialize* in order to create a *SharedJournalSetter* actor and start sharding
+- Make sure cluster sharding works as expected: When multiple "player-registry" member nodes are started, players should be created on all of them
+</script></section>
+
+
+</section>
+
+
+<!-- ########################################################################################### -->
+<!-- Akka Data Replication
+<!-- ########################################################################################### -->
+
+
+<section>
+
+
+<section id="akka-data-replication" data-markdown data-background="#53cdec" data-state="h2Uppercase"><script type="text/template">
+## Akka Data Replication
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Akka Data Replication
+
+- **Attention**: Bleeding edge, currently only published under the *com.github.patriknw* organization
+- Akka Data Replication gives you an
+  - eventually consistent
+  - replicated in-memory data store
+  - supporting low latency and high availability
+- Data must be Conflict Free Replicated Data Types (CRDTs)
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## CRDTs from 10,000 feet
+
+- How can we obtain eventual consistency of replicas without central coordination?
+- If the data fulfills certain requirements, eventual consistency can be guaranteed:
+  - Convergent Replicated Data Types (CvRDTs) use state-based replication based on a monotonic merge function
+  - Commutative Replicated Data Types (CmRDTs) use operations-based replication with commuting concurrent operations
+- For details, see [A comprehensive study of Convergent and Commutative Replicated Data Types](http://hal.upmc.fr/docs/00/55/55/88/PDF/techreport.pdf) by Marc Shapiro et al.
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## CvRDTs in Akka Data Replication
+
+``` scala
+trait ReplicatedData {
+
+  type T <: ReplicatedData
+
+  def merge(that: T): T
+}
+```
+
+- Data Replication currently only supports CvRDTs (state-based)
+- The base type for all CvRDTs is *ReplicatedData*
+- Examples for concrete CvRDTs:
+  - *GCounter*, *PNCounter*
+  - *GSet*, *ORSet*
+  - *ORMap*, *PNCounterMap*
+  - etc.
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## The Replicator
+
+- Data replication is performed by the provided *Replicator* actor:
+  - The replicator is started on all member nodes participating in Data Replication
+  - **Attention**: You must communicate with a local replicator!
+  - The local replicator can conveniently be accessed via the *DataReplication* extension
+- Essentially the replicator is a key-value store:
+  - Keys are strings, values are *ReplicatedData*
+  - Data is replicated directly and via gossiping
+- Supported operations are *Get*, *Subscribe*, *Update* and *Delete*
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Updating
+
+``` scala
+implicit val cluster: Cluster = ...
+replicator ! Replicator.Update("key", GCounter.emtpy)(_ + 1)
+```
+- *Update* takes
+  - a key,
+  - an initial value,
+  - an optional request context, e.g. to ease responding to the sender after receiving *UpdateSuccess*, and
+  - an update function
+- As member node information is used to identify updates from different replicas, there must be an implicit *Cluster* value in scope
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Change Notifications
+
+``` scala
+replicator ! Replicator.Subscribe("key", self)
+
+override def receive: Receive = {
+  case Replicator.Changed("counter", counter: GCounter) =>
+    // TODO React on the change!
+}
+
+```
+- In order to get notified when the value for a particular key has changed, send *Subscribe* to the replicator
+- In turn the subscribed actor will receive *Changed* messages
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-background="#627886" data-state="h2Uppercase"><script type="text/template">
+## Exercise
+### Data replication
+
+- Motivation: Replicate the scores repository
+- Change *ScoresRepository*:
+  - Replace the local scores storage with a suitable *ReplicatedData* type
+  - Communicate with the *Replicator* in order to update the scores
+  - Subscribe to score changes in order to log the changed scores at info
+- In *GameEngine* use multiple routees for the *ScoresRepository* routers
+- Make sure data replication works as expected: Multiple "scores-repository" member nodes should eventually become consistent
+</script></section>
+
+
+</section>
+
+
+<!-- ########################################################################################### -->
+<!-- Wrapping up
+<!-- ########################################################################################### -->
+
+
+<section>
+
+
+<section id="wrapping-up" data-markdown data-background="#53cdec" data-state="h2Uppercase"><script type="text/template">
+## Wrapping up
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Feedback
+
+![Akka Concurrency](images/akka-concurrency.png "Akka Concurrency")
+
+- Thanks for taking this "Advanced Akka" training course
+- Would you like to receive a free e-book copy of "Akka Concurrency"?
+- Then complete [this short online survey](http://survey.qualtrics.com/SE/?SID=SV_86oNJRndlpGmSwd) now
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Typesafe Together
+
+- Developer and production support
+  - Maintenance of older version
+  - Proactive tips and techniques
+- Backstage pass
+  - Ask the expert webinars
+  - Early access to online courses
+- Community spotlight
+  - Posting of job openings on community page
+  - Projects highlighted on Typesafe content sites
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## The End
+### Copyright 2014 Typesafe, Inc.
+### All rights reserved.
+
+[![Solutions](images/typesafe-logo.png "Solutions")](https://training.typesafe.com/20141022-aas-rknight-ddevore/solutions.zip)
+
+Unless otherwise agreed, training materials may only be used for educational and reference purposes by individual named participants in a training course offered by Typesafe or a Typesafe training partner. Unauthorized reproduction, redistribution, or use of this material is prohibited.
+</script></section>
+
+
+</section>
+
+
+<!-- ########################################################################################### -->
+<!-- END
+<!-- ########################################################################################### -->
+
+
+</div>
+</div>
+
+<script src="lib/js/head.min.js"></script>
+<script src="js/reveal.min.js"></script>
+<script>
+
+  // Full list of configuration options available here:
+  // https://github.com/hakimel/reveal.js#configuration
+  Reveal.initialize({
+    controls: true,
+    progress: true,
+    history: true,
+    center: true,
+    maxScale: 2.0,
+
+    theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+    transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+    // Optional libraries used to extend on reveal.js
+    dependencies: [
+      { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+      { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } },
+      { src: 'socket.io/socket.io.js', async: true },
+      { src: 'plugin/notes-server/client.js', async: true }
+    ]
+  });
+</script>
+
+</body>
+</html>

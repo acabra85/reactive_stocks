@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+<meta charset="utf-8">
+
+<title>Advanced Akka</title>
+
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<link rel="stylesheet" href="css/reveal.min.css">
+<link rel="stylesheet" href="css/theme/typesafe-training.css" id="theme">
+<link rel="stylesheet" href="lib/css/idea.css">
+
+<!-- If the query includes 'print-pdf', include the PDF print sheet -->
+<script>
+  if( window.location.search.match( /print-pdf/gi ) ) {
+    var link = document.createElement( 'link' );
+    link.rel = 'stylesheet';
+    link.type = 'text/css';
+    link.href = 'css/print/pdf.css';
+    document.getElementsByTagName( 'head' )[0].appendChild( link );
+  }
+</script>
+
+<!--[if lt IE 9]>
+<script src="lib/js/html5shiv.js"></script>
+<![endif]-->
+</head>
+
+<body>
+
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ########################################################################################### -->
+<!-- BEGIN
+<!-- ########################################################################################### -->
+
+
+<section data-markdown data-background="#53cdec" data-state="h2Uppercase"><script type="text/template">
+## Setup for Advanced Akka
+
+#### Suramericano, Oct 22, 2014
+
+#### Ryan Knight, Duncan DeVore
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Setup
+
+- This document describes how to setup
+  - the development environment and
+  - the case study project
+- We recommend using the following tools:
+  - Eclipse or IntelliJ, both with Scala plugin
+  - sbt build tool
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Install the Akkollect Case Study
+
+- Download the [Akkollect ZIP archive](https://training.typesafe.com/20141022-aas-rknight-ddevore/akkollect.zip)
+- Unzip *akkollect.zip* to your local disk
+- *cd* into the new *akkollect* directory
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Install sbt 0.13.5
+
+``` json
+$ sbt --version
+sbt launcher version 0.13.5
+```
+
+- If you are a Mac and [Homebrew](http://mxcl.github.com/homebrew) user: *brew install sbt*
+- Else follow these [setup instructions](http://www.scala-sbt.org/release/tutorial/Setup.html)
+- Verify the installation:
+  - Open a terminal
+  - Enter *sbt --version* like shown above
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Make yourself familiar with sbt
+
+``` json
+akkollect$ sbt
+...
+[info] Set current project to akkollect ...
+>
+```
+
+- Starting sbt takes you to an **interactive session**
+- *cd* into the *akkollect* directory and start sbt
+- Read the first chapters of the [Getting Started Guide](http://www.scala-sbt.org/release/docs/Getting-Started/Welcome.html)
+- Take a look at *build.sbt* and *project/Dependencies.scala* for Akkollect
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Summary of important sbt Commands
+
+- *exit* ends the sbt session
+- *help* lists the available commands
+- *compile* compiles the main sources
+- *test:compile* compiles the test and main sources
+- *test* runs tests after compiling the test and main sources
+- *console* starts the REPL with the project on the classpath
+- *run* looks for an application and runs it
+- *clean* deletes all output in the target directory
+- *reload* reloads the sbt session
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Install the Scala IDE for Eclipse
+
+- Follow these instructions if you want to use Eclipse
+- **Attention**: Make sure you pick the right packages for Scala 2.11!
+- You can download the prepackaged and preconfigured Scala IDE for your platform from [scala-ide.org/download/sdk.html](http://scala-ide.org/download/sdk.html)
+- You can also use your already installed Eclipse:
+    - Install the latest Scala IDE plugin
+    - Use the following update site for Eclipse 4.2 and 4.3 (Juno and Kepler): <nobr>[download.scala-ide.org/sdk/helium/e38/scala211/stable/site](http://download.scala-ide.org/sdk/helium/e38/scala211/stable/site)</nobr>
+- In Eclipse import the Akkollect project with <nobr>*Import... > Existing Projects into Workspace*</nobr>
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Install the ScalaTest Plugin for Eclipse
+
+- Follow these instructions if you want to use Eclipse
+- In Eclipse select <nobr>*Help > Install New Software*</nobr>
+- Select the *Scala IDE* update site
+- Expand the entry *Scala IDE plugins*
+- Select entry *ScalaTest for Scala IDE*
+- Press *Next >* and follow the installation process
+- Restart Eclipse if prompted
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Creating an Eclipse project from sbt
+
+``` json
+> eclipse
+[info] Successfully created Eclipse project files ...
+```
+
+- In the sbt session for Akkollect execute *eclipse*
+- You have to re-run this command and refresh the Eclipse project when you change the sbt build definition, e.g. if you add library dependencies
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Install IntelliJ IDEA with Scala Plugin
+
+- Follow these instructions if you want to use IntelliJ IDEA
+- Download and install the latest version  of IntelliJ IDEA 13
+- Start IntelliJ IDEA and install the Scala plugin via the plugin configuration
+- Import the Akkollect project via "Import Project"
+</script></section>
+
+
+<!-- ########################################################################################### -->
+
+
+<section data-markdown><script type="text/template">
+## Course Materials
+
+- OK, by now you should be all set with the development environment and the case study project
+- Now you should download the and extract the [slide deck ZIP archive](https://training.typesafe.com/20141022-aas-rknight-ddevore/deck.zip)
+- You can also access the [slide deck online](https://training.typesafe.com/20141022-aas-rknight-ddevore/index.html)
+</script></section>
+
+
+<!-- ########################################################################################### -->
+<!-- END
+<!-- ########################################################################################### -->
+
+
+</div>
+</div>
+
+<script src="lib/js/head.min.js"></script>
+<script src="js/reveal.min.js"></script>
+<script>
+
+  // Full list of configuration options available here:
+  // https://github.com/hakimel/reveal.js#configuration
+  Reveal.initialize({
+    controls: true,
+    progress: true,
+    history: true,
+    center: true,
+    maxScale: 2.0,
+
+    theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+    transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+    // Optional libraries used to extend on reveal.js
+    dependencies: [
+      { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+      { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+      { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+      { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+      { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+    ]
+  });
+</script>
+
+</body>
+</html>
