@@ -73,7 +73,7 @@ class SentimentActor extends Actor with ActorLogging {
 
 object SentimentActor {
 
-    lazy val sentimentActor: ActorRef = Akka.system.actorOf(Props(classOf[SentimentActor]))
+    //lazy val sentimentActor: ActorRef = Akka.system.actorOf(Props(classOf[SentimentActor]))
 
     case class GetSentiment(symbol: String)
     case class SentimentResults(results: JsValue)

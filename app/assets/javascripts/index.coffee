@@ -72,9 +72,10 @@ handleFlip = (container) ->
     container.find(".details-holder").empty()
   else
     container.addClass("flipped")
+    dataContent = container.find(".chart-holder").attr("data-content")
     # fetch stock details and tweet
     $.ajax
-      url: "/sentiment/" + container.children(".flipper").attr("data-content")
+      url: "/sentiment/" + dataContent
       dataType: "json"
       context: container
       success: (data) ->
